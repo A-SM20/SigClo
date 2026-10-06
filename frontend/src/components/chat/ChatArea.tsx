@@ -1,22 +1,30 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useWebSocket } from '@/contexts/WebSocketContext';
-import { Send, MoreVertical, Phone, Video } from 'lucide-react';
+import { Send, MoreVertical, Phone, Video, Check, CheckCheck } from 'lucide-react';
 import { GroupDetailsModal } from './GroupDetailsModal';
 
 export function ChatArea() {
   const { user } = useAuthStore();
-  const { activeConversationId, conversations, messages, fetchMessages } = useChatStore();
-  const { sendMessage } = useWebSocket();
+  const { activeConversationId, conversations, messages, fetchMessages, typingUsers } = useChatStore();
+  const { sendMessage, sendTyping, sendReceipt } = useWebSocket();
   const [inputText, setInputText] = useState('');
   const [showGroupDetails, setShowGroupDetails] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const conversation = conversations.find(c => c.id === activeConversationId);
-  const activeMessages = activeConversationId ? messages[activeConversationId] || [] : [];
+  
+  const activeMessages = useMemo(() => {
+    return activeConversationId ? messages[activeConversationId] || [] : [];
+  }, [activeConversationId, messages]);
+
+  const activeTyping = useMemo(() => {
+    return activeConversationId ? typingUsers[activeConversationId] || [] : [];
+  }, [activeConversationId, typingUsers]);
 
   useEffect(() => {
     if (activeConversationId) {
@@ -25,9 +33,23 @@ export function ChatArea() {
   }, [activeConversationId, fetchMessages]);
 
   useEffect(() => {
+    // Mark all incoming messages as read when viewing them
+    if (activeConversationId && user) {
+      activeMessages.forEach(msg => {
+        if (msg.sender_id !== user.id) {
+          const myReceipt = msg.receipts?.[user.id];
+          if (myReceipt !== 'read') {
+            sendReceipt(msg.id, 'read');
+          }
+        }
+      });
+    }
+  }, [activeConversationId, activeMessages, user, sendReceipt]);
+
+  useEffect(() => {
     // Scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeMessages]);
+  }, [activeMessages, activeTyping]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +57,20 @@ export function ChatArea() {
     
     sendMessage(activeConversationId, inputText);
     setInputText('');
+    sendTyping(activeConversationId, false);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  };
+
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+    if (!activeConversationId) return;
+
+    sendTyping(activeConversationId, true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      sendTyping(activeConversationId, false);
+    }, 2000);
   };
 
   if (!conversation) return null;
@@ -86,6 +122,14 @@ export function ChatArea() {
         ) : (
           activeMessages.map((msg, index) => {
             const isMe = msg.sender_id === user?.id;
+            
+            let status = 'sent';
+            if (isMe && msg.receipts) {
+              const vals = Object.values(msg.receipts);
+              if (vals.includes('read')) status = 'read';
+              else if (vals.includes('delivered')) status = 'delivered';
+            }
+
             return (
               <div key={msg.id || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div 
@@ -96,13 +140,29 @@ export function ChatArea() {
                   }`}
                 >
                   <p className="text-[15px] leading-relaxed">{msg.content}</p>
-                  <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>
-                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <div className={`flex items-center gap-1 text-[10px] mt-1 ${isMe ? 'justify-end text-blue-200' : 'justify-start text-gray-400'}`}>
+                    <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {isMe && (
+                      <span className="ml-1">
+                        {status === 'read' ? <CheckCheck size={14} className="text-blue-200" /> :
+                         status === 'delivered' ? <CheckCheck size={14} className="opacity-70" /> :
+                         <Check size={14} className="opacity-70" />}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
             );
           })
+        )}
+        {activeTyping.length > 0 && (
+          <div className="flex justify-start">
+            <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -113,7 +173,7 @@ export function ChatArea() {
           <input
             type="text"
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
+            onChange={handleTyping}
             placeholder="Signal message"
             className="flex-1 bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-full px-5 py-3 transition-all"
           />

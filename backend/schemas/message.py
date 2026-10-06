@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional, Dict
 
 class MessageCreate(BaseModel):
     conversation_id: int
@@ -11,6 +12,7 @@ class MessageResponse(BaseModel):
     sender_id: int
     content: str
     created_at: datetime
+    receipts: Optional[Dict[int, str]] = None
 
     class Config:
         from_attributes = True

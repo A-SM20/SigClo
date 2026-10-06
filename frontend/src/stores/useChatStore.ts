@@ -35,6 +35,9 @@ interface ChatState {
   createGroupConversation: (name: string, memberIds: number[]) => Promise<Conversation>;
   fetchMessages: (conversationId: number) => Promise<void>;
   addMessage: (message: any) => void;
+  updateMessageReceipt: (conversationId: number, messageId: number, userId: number, status: 'delivered' | 'read') => void;
+  typingUsers: Record<number, number[]>; // conversationId -> array of userIds typing
+  setTyping: (conversationId: number, userId: number, isTyping: boolean) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -42,6 +45,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   contacts: [],
   activeConversationId: null,
   messages: {},
+  typingUsers: {},
   isLoadingConversations: false,
   isLoadingContacts: false,
 
@@ -145,5 +149,49 @@ export const useChatStore = create<ChatState>((set, get) => ({
     
     set({ activeConversationId: newConv.id });
     return newConv;
+  },
+
+  updateMessageReceipt: (conversationId, messageId, userId, status) => {
+    set((state) => {
+      const existing = state.messages[conversationId];
+      if (!existing) return state;
+
+      const updated = existing.map(msg => {
+        if (msg.id === messageId) {
+          const receipts = msg.receipts || {};
+          return {
+            ...msg,
+            receipts: {
+              ...receipts,
+              [userId]: status
+            }
+          };
+        }
+        return msg;
+      });
+
+      return {
+        messages: {
+          ...state.messages,
+          [conversationId]: updated
+        }
+      };
+    });
+  },
+
+  setTyping: (conversationId, userId, isTyping) => {
+    set((state) => {
+      const current = state.typingUsers[conversationId] || [];
+      const updated = isTyping 
+        ? (current.includes(userId) ? current : [...current, userId])
+        : current.filter(id => id !== userId);
+        
+      return {
+        typingUsers: {
+          ...state.typingUsers,
+          [conversationId]: updated
+        }
+      };
+    });
   }
 }));

@@ -6,13 +6,15 @@ import { useChatStore } from '@/stores/useChatStore';
 
 interface WebSocketContextType {
   sendMessage: (conversationId: number, content: string) => void;
+  sendTyping: (conversationId: number, isTyping: boolean) => void;
+  sendReceipt: (messageId: number, status: 'delivered' | 'read') => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
-  const { addMessage } = useChatStore();
+  const { addMessage, updateMessageReceipt, setTyping } = useChatStore();
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -41,6 +43,22 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
           const data = JSON.parse(event.data);
           if (data.type === 'new_message') {
             addMessage(data.message);
+            // Send delivered receipt immediately
+            if (data.message.sender_id !== user.id) {
+                if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                    ws.current.send(JSON.stringify({
+                        type: 'message.receipt_updated',
+                        message_id: data.message.id,
+                        status: 'delivered'
+                    }));
+                }
+            }
+          } else if (data.type === 'typing.start') {
+            setTyping(data.conversation_id, data.user_id, true);
+          } else if (data.type === 'typing.stop') {
+            setTyping(data.conversation_id, data.user_id, false);
+          } else if (data.type === 'message.receipt_updated') {
+            updateMessageReceipt(data.conversation_id, data.message_id, data.user_id, data.status);
           }
         } catch (e) {
           console.error('Error parsing WS message', e);
@@ -58,7 +76,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         ws.current = null;
       }
     };
-  }, [user, addMessage]);
+  }, [user, addMessage, updateMessageReceipt, setTyping]);
 
   const sendMessage = (conversationId: number, content: string) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
@@ -72,8 +90,27 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const sendTyping = (conversationId: number, isTyping: boolean) => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({
+        type: isTyping ? 'typing.start' : 'typing.stop',
+        conversation_id: conversationId
+      }));
+    }
+  };
+
+  const sendReceipt = (messageId: number, status: 'delivered' | 'read') => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({
+        type: 'message.receipt_updated',
+        message_id: messageId,
+        status: status
+      }));
+    }
+  };
+
   return (
-    <WebSocketContext.Provider value={{ sendMessage }}>
+    <WebSocketContext.Provider value={{ sendMessage, sendTyping, sendReceipt }}>
       {children}
     </WebSocketContext.Provider>
   );
