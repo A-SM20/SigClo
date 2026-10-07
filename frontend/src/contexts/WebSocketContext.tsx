@@ -36,7 +36,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
     const connect = () => {
       if (!isMounted) return;
-      const wsUrl = `ws://127.0.0.1:8000/ws?token=${token}`;
+      const baseUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000/ws';
+      const wsUrl = `${baseUrl}?token=${token}`;
       
       if (!ws.current || ws.current.readyState === WebSocket.CLOSED) {
         const socket = new WebSocket(wsUrl);
