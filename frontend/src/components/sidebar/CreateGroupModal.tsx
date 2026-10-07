@@ -59,24 +59,24 @@ export function CreateGroupModal({ onClose }: CreateGroupModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-signal-darkPanel rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[90vh] border border-transparent dark:border-signal-darkBorder text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-signal-darkBorder">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Users size={20} className="text-blue-500" />
+            <Users size={20} className="text-signal-blue" />
             Create New Group
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-[#2B2B2B] rounded-full transition-colors text-gray-500 dark:text-gray-400">
             <X size={20} />
           </button>
         </div>
 
-        <div className="p-4 space-y-4 overflow-y-auto">
+        <div className="p-4 space-y-4 overflow-y-auto custom-scrollbar">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Group Name</label>
+            <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1">Group Name</label>
             <input
               type="text"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              className="w-full border border-gray-300 dark:border-signal-darkBorder bg-white dark:bg-signal-dark rounded-lg px-3 py-2 text-[15px] focus:ring-1 focus:ring-signal-blue focus:border-signal-blue outline-none transition-colors placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="e.g. Weekend Trip"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
@@ -84,14 +84,14 @@ export function CreateGroupModal({ onClose }: CreateGroupModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Add Members</label>
+            <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1">Add Members</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={16} className="text-gray-400" />
               </div>
               <input
                 type="text"
-                className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                className="w-full border border-gray-300 dark:border-signal-darkBorder bg-white dark:bg-signal-dark rounded-lg pl-9 pr-3 py-2 text-[15px] focus:ring-1 focus:ring-signal-blue focus:border-signal-blue outline-none transition-colors placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="Search by name or phone"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
@@ -103,9 +103,9 @@ export function CreateGroupModal({ onClose }: CreateGroupModalProps) {
           {selectedUsers.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-2">
               {selectedUsers.map(u => (
-                <div key={u.id} className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                <div key={u.id} className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/40 text-signal-blue dark:text-blue-300 px-3 py-1.5 rounded-full text-[13px] font-medium">
                   {u.display_name}
-                  <button onClick={() => toggleUser(u)} className="hover:text-blue-900 ml-1">
+                  <button onClick={() => toggleUser(u)} className="hover:text-blue-900 dark:hover:text-blue-100 ml-1 transition-colors">
                     <X size={14} />
                   </button>
                 </div>
@@ -115,19 +115,19 @@ export function CreateGroupModal({ onClose }: CreateGroupModalProps) {
 
           {/* Search Results */}
           {searchQuery && (
-            <div className="border border-gray-100 rounded-lg max-h-48 overflow-y-auto shadow-sm">
+            <div className="border border-gray-100 dark:border-signal-darkBorder rounded-lg max-h-48 overflow-y-auto shadow-sm custom-scrollbar bg-white dark:bg-signal-dark">
               {searchResults.length === 0 ? (
-                <div className="p-3 text-sm text-gray-500 text-center">No users found.</div>
+                <div className="p-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No users found.</div>
               ) : (
                 searchResults.map(u => (
                   <button
                     key={u.id}
                     onClick={() => toggleUser(u)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0"
+                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-signal-darkPanel transition-colors text-left border-b border-gray-50 dark:border-signal-darkBorder last:border-0"
                   >
                     <div>
-                      <p className="font-medium text-gray-900 text-sm">{u.display_name}</p>
-                      <p className="text-xs text-gray-500">{u.phone_number || u.username}</p>
+                      <p className="font-medium text-[15px]">{u.display_name}</p>
+                      <p className="text-[13px] text-gray-500 dark:text-gray-400">{u.phone_number || u.username}</p>
                     </div>
                   </button>
                 ))
@@ -136,17 +136,17 @@ export function CreateGroupModal({ onClose }: CreateGroupModalProps) {
           )}
         </div>
 
-        <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+        <div className="p-4 border-t border-gray-100 dark:border-signal-darkBorder bg-gray-50 dark:bg-transparent rounded-b-xl flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+            className="px-4 py-2 text-[14px] font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={!groupName.trim() || selectedUsers.length === 0 || isLoading}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 transition-colors flex items-center gap-2"
+            className="px-4 py-2 text-[14px] font-medium bg-signal-blue text-white rounded-lg hover:bg-signal-blueHover disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             {isLoading ? 'Creating...' : (
               <>

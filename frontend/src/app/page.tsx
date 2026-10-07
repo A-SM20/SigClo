@@ -23,41 +23,23 @@ export default function Home() {
   return (
     <ProtectedRoute>
       <WebSocketProvider>
-        <div className="flex h-screen bg-gray-50 overflow-hidden relative">
+        <div className="flex h-screen bg-gray-50 dark:bg-signal-dark overflow-hidden relative font-sans text-gray-900 dark:text-gray-100">
           {/* Left Sidebar */}
-          <div className={`w-full md:w-80 md:flex flex-col bg-white border-r border-gray-200 z-10 ${activeConversationId ? 'hidden' : 'flex'}`}>
+          <div className={`w-full md:w-80 md:flex flex-col bg-white dark:bg-signal-dark border-r border-gray-200 dark:border-signal-darkBorder z-10 ${activeConversationId ? 'hidden' : 'flex'}`}>
             <Sidebar />
           </div>
 
           {/* Right Chat Area */}
-          <div className={`flex-1 md:flex flex-col bg-white ${activeConversationId ? 'flex' : 'hidden'}`}>
+          <div className={`flex-1 md:flex flex-col bg-white dark:bg-signal-dark ${activeConversationId ? 'flex' : 'hidden'}`}>
             {activeConversationId ? (
               <ChatArea />
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-500 bg-gray-50 border-l border-gray-200">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-blue-500 shadow-sm">
-                  <MessageSquare size={28} />
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-signal-dark">
+                <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-6 text-signal-blue shadow-sm">
+                  <MessageSquare size={36} strokeWidth={1.5} />
                 </div>
-                <h2 className="text-2xl font-medium text-gray-900 mb-2">Signal Clone</h2>
-                <p>Select a conversation or search for a user to start messaging.</p>
-                
-                {/* User Profile / Logout temporarily placed here for demo purposes */}
-                <div className="mt-auto mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 min-w-[280px]">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                    <UserIcon size={24} />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-medium text-gray-900">{user?.display_name}</p>
-                    <p className="text-xs text-gray-500">{user?.phone_number || user?.username}</p>
-                  </div>
-                  <button
-                    onClick={() => logout()}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                    title="Log out"
-                  >
-                    <LogOut size={20} />
-                  </button>
-                </div>
+                <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2 tracking-tight">Signal</h2>
+                <p className="text-[15px] max-w-sm">Select a conversation or start a new chat to begin messaging.</p>
               </div>
             )}
           </div>

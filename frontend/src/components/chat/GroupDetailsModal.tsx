@@ -36,14 +36,14 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
   if (!conversation) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-signal-darkPanel rounded-xl shadow-xl w-full max-w-md border border-transparent dark:border-signal-darkBorder text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-signal-darkBorder">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Users size={20} className="text-blue-500" />
+            <Users size={20} className="text-signal-blue" />
             Group Details
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-[#2B2B2B] rounded-full transition-colors text-gray-500 dark:text-gray-400">
             <X size={20} />
           </button>
         </div>
@@ -52,24 +52,18 @@ export function GroupDetailsModal({ conversationId, onClose }: GroupDetailsModal
           <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-400 to-blue-600 mx-auto flex items-center justify-center text-white text-3xl font-semibold">
             {conversation.display_name?.[0]?.toUpperCase() || '#'}
           </div>
-          <h3 className="text-xl font-bold text-gray-900">{conversation.display_name}</h3>
-          <p className="text-sm text-gray-500">Group Conversation</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">{conversation.display_name}</h3>
+          <p className="text-[13px] text-gray-500 dark:text-gray-400">Group Conversation</p>
 
-          <div className="flex gap-3 justify-center pt-4">
-            <button className="flex flex-col items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <UserPlus size={18} />
-              </div>
-              <span className="text-xs font-medium">Add</span>
-            </button>
+          <div className="flex gap-4 justify-center pt-4">
             <button 
               onClick={handleLeaveGroup}
-              className="flex flex-col items-center gap-1 text-gray-600 hover:text-red-600 transition-colors"
+              className="flex flex-col items-center gap-1.5 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                <UserMinus size={18} />
+              <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-[#2B2B2B] flex items-center justify-center">
+                <UserMinus size={20} />
               </div>
-              <span className="text-xs font-medium">Leave</span>
+              <span className="text-[12px] font-medium">Leave</span>
             </button>
           </div>
         </div>
