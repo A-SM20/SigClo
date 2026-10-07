@@ -3,8 +3,8 @@ uvicorn
 sqlalchemy
 pydantic
 pydantic-settings
-python-jose[cryptography]
-passlib[bcrypt]
+PyJWT
+bcrypt
 websockets
 psycopg2-binary
 psycopg-binary
