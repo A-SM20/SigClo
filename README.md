@@ -1,4 +1,4 @@
-# Signal Clone (SDE Fullstack Assignment)
+# Signal Clone
 
 A functional, full-stack clone of the Signal messaging application built as a vertical slice demonstration. It supports instantaneous real-time WebSockets messaging, 1:1 and Group chats, and seamless database persistence.
 
