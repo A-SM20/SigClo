@@ -29,12 +29,17 @@ async def websocket_endpoint(
     token: str = Query(...),
     db: Session = Depends(get_db)
 ):
+    await websocket.accept()
+    
     user = await get_token_user(token, db)
     if not user:
+        await websocket.send_json({"type": "error", "message": "Authentication failed"})
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
         
-    await manager.connect(websocket, user.id)
+    if user.id not in manager.active_connections:
+        manager.active_connections[user.id] = []
+    manager.active_connections[user.id].append(websocket)
     try:
         while True:
             data = await websocket.receive_text()
