@@ -59,7 +59,7 @@ def seed_db():
     now = datetime.utcnow()
     
     def create_dm(u1, u2):
-        c = Conversation(is_group=False, created_at=now - timedelta(days=5))
+        c = Conversation(is_group=0, created_at=now - timedelta(days=5))
         db.add(c)
         db.commit()
         db.refresh(c)
@@ -71,7 +71,7 @@ def seed_db():
         return c
 
     def create_group(name, admin, members):
-        c = Conversation(is_group=True, name=name, created_at=now - timedelta(days=10))
+        c = Conversation(is_group=1, name=name, created_at=now - timedelta(days=10))
         db.add(c)
         db.commit()
         db.refresh(c)
