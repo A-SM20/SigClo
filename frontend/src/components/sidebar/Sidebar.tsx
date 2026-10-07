@@ -33,7 +33,7 @@ export function Sidebar() {
   };
 
   return (
-    <div className="w-80 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col h-full">
+    <div className="w-full flex-col bg-white flex h-full">
       <div className="h-16 flex items-center px-4 border-b border-gray-200 gap-2">
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

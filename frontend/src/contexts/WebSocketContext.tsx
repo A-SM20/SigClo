@@ -17,7 +17,12 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const { addMessage, updateMessageReceipt, setTyping } = useChatStore();
   const ws = useRef<WebSocket | null>(null);
 
+  const reconnectAttempts = useRef(0);
+  const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
+    let isMounted = true;
+
     if (!user) {
       if (ws.current) {
         ws.current.close();
@@ -29,48 +34,70 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const wsUrl = `ws://127.0.0.1:8000/ws?token=${token}`;
-    
-    if (!ws.current || ws.current.readyState === WebSocket.CLOSED) {
-      ws.current = new WebSocket(wsUrl);
+    const connect = () => {
+      if (!isMounted) return;
+      const wsUrl = `ws://127.0.0.1:8000/ws?token=${token}`;
+      
+      if (!ws.current || ws.current.readyState === WebSocket.CLOSED) {
+        const socket = new WebSocket(wsUrl);
+        ws.current = socket;
 
-      ws.current.onopen = () => {
-        console.log('WebSocket connected');
-      };
+        socket.onopen = () => {
+          console.log('WebSocket connected');
+          reconnectAttempts.current = 0;
+        };
 
-      ws.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'new_message') {
-            addMessage(data.message);
-            // Send delivered receipt immediately
-            if (data.message.sender_id !== user.id) {
-                if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-                    ws.current.send(JSON.stringify({
-                        type: 'message.receipt_updated',
-                        message_id: data.message.id,
-                        status: 'delivered'
-                    }));
-                }
+        socket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'new_message') {
+              addMessage(data.message);
+              // Send delivered receipt immediately
+              if (data.message.sender_id !== user.id) {
+                  if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                      ws.current.send(JSON.stringify({
+                          type: 'message.receipt_updated',
+                          message_id: data.message.id,
+                          status: 'delivered'
+                      }));
+                  }
+              }
+            } else if (data.type === 'typing.start') {
+              setTyping(data.conversation_id, data.user_id, true);
+            } else if (data.type === 'typing.stop') {
+              setTyping(data.conversation_id, data.user_id, false);
+            } else if (data.type === 'message.receipt_updated') {
+              updateMessageReceipt(data.conversation_id, data.message_id, data.user_id, data.status);
             }
-          } else if (data.type === 'typing.start') {
-            setTyping(data.conversation_id, data.user_id, true);
-          } else if (data.type === 'typing.stop') {
-            setTyping(data.conversation_id, data.user_id, false);
-          } else if (data.type === 'message.receipt_updated') {
-            updateMessageReceipt(data.conversation_id, data.message_id, data.user_id, data.status);
+          } catch (e) {
+            console.error('Error parsing WS message', e);
           }
-        } catch (e) {
-          console.error('Error parsing WS message', e);
-        }
-      };
+        };
 
-      ws.current.onclose = () => {
-        console.log('WebSocket disconnected');
-      };
-    }
+        socket.onclose = () => {
+          console.log('WebSocket disconnected');
+          ws.current = null;
+          
+          if (isMounted) {
+            // Exponential backoff
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+            console.log(`Reconnecting in ${delay}ms...`);
+            reconnectTimeout.current = setTimeout(() => {
+              reconnectAttempts.current += 1;
+              connect();
+            }, delay);
+          }
+        };
+      }
+    };
+
+    connect();
 
     return () => {
+      isMounted = false;
+      if (reconnectTimeout.current) {
+        clearTimeout(reconnectTimeout.current);
+      }
       if (ws.current) {
         ws.current.close();
         ws.current = null;

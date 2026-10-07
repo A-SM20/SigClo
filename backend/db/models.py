@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from db.database import Base
 
@@ -16,8 +16,8 @@ class User(Base):
 class Contact(Base):
     __tablename__ = "contacts"
 
-    user_id = Column(Integer, primary_key=True)
-    contact_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    contact_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class Conversation(Base):
@@ -31,8 +31,8 @@ class Conversation(Base):
 class ConversationMember(Base):
     __tablename__ = "conversation_members"
 
-    conversation_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, primary_key=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     role = Column(String, default="member")
     joined_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -40,15 +40,15 @@ class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    conversation_id = Column(Integer, index=True)
-    sender_id = Column(Integer, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id", ondelete="CASCADE"), index=True)
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     content = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class MessageReceipt(Base):
     __tablename__ = "message_receipts"
 
-    message_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, primary_key=True)
+    message_id = Column(Integer, ForeignKey("messages.id", ondelete="CASCADE"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     status = Column(String, default="sent") # sent, delivered, read
     updated_at = Column(DateTime(timezone=True), server_default=func.now())

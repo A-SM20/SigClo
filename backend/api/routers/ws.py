@@ -52,11 +52,11 @@ async def websocket_endpoint(
                             ConversationMember.user_id == user.id
                         ).first()
                         
-                        if membership and content:
+                        if membership and content and content.strip():
                             new_msg = Message(
                                 conversation_id=conversation_id,
                                 sender_id=user.id,
-                                content=content
+                                content=content.strip()
                             )
                             db_session.add(new_msg)
                             db_session.commit()

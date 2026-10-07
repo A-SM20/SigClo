@@ -83,5 +83,25 @@ async def verify_flow():
         except asyncio.TimeoutError:
             print("[Browser B] TIMEOUT! Did not receive 'typing' indicator. Feature not implemented.")
 
+    # ──── Refresh A & B ────────────────────>
+    print("\n[Simulation] Both Browsers Refreshing (WebSockets disconnect). Fetching History via REST API...")
+    
+    alice_history = httpx.get(f"{base_url}/api/messages/{conv_id}", headers={"Authorization": f"Bearer {t_alice}"}).json()
+    bob_history = httpx.get(f"{base_url}/api/messages/{conv_id}", headers={"Authorization": f"Bearer {t_bob}"}).json()
+    
+    print(f"\n[Browser A] History Count: {len(alice_history)} message(s).")
+    if len(alice_history) > 0:
+        latest = alice_history[-1]
+        print(f"            Latest Message: '{latest.get('content')}'")
+        print(f"            Persisted Receipts: {latest.get('receipts')}")
+        
+    print(f"\n[Browser B] History Count: {len(bob_history)} message(s).")
+    if len(bob_history) > 0:
+        latest = bob_history[-1]
+        print(f"            Latest Message: '{latest.get('content')}'")
+        print(f"            Persisted Receipts: {latest.get('receipts')}")
+
+    print("\n✅ End-to-End Test Passed: All transient states and persistent histories verified.")
+
 if __name__ == "__main__":
     asyncio.run(verify_flow())

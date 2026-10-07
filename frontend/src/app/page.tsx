@@ -23,12 +23,14 @@ export default function Home() {
   return (
     <ProtectedRoute>
       <WebSocketProvider>
-        <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <div className="flex h-screen bg-gray-50 overflow-hidden relative">
           {/* Left Sidebar */}
-          <Sidebar />
+          <div className={`w-full md:w-80 md:flex flex-col bg-white border-r border-gray-200 z-10 ${activeConversationId ? 'hidden' : 'flex'}`}>
+            <Sidebar />
+          </div>
 
           {/* Right Chat Area */}
-          <div className="flex-1 flex flex-col bg-white">
+          <div className={`flex-1 md:flex flex-col bg-white ${activeConversationId ? 'flex' : 'hidden'}`}>
             {activeConversationId ? (
               <ChatArea />
             ) : (

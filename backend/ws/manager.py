@@ -35,7 +35,11 @@ class ConnectionManager:
             if exclude_user_id and member_id == exclude_user_id:
                 continue
             if member_id in self.active_connections:
-                for connection in self.active_connections[member_id]:
-                    await connection.send_json(message_data)
+                # Iterate over a copy of the list in case disconnect() is called concurrently
+                for connection in list(self.active_connections[member_id]):
+                    try:
+                        await connection.send_json(message_data)
+                    except Exception:
+                        self.disconnect(connection, member_id)
 
 manager = ConnectionManager()
