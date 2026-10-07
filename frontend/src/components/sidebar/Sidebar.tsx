@@ -48,7 +48,6 @@ export function Sidebar() {
   };
 
   return (
-  return (
     <div className="w-full flex-col bg-white dark:bg-signal-dark flex h-full">
       <div className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-signal-darkBorder gap-3">
         <div className="relative" ref={dropdownRef}>
