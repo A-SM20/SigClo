@@ -7,3 +7,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 websockets
 psycopg2-binary
+psycopg-binary
